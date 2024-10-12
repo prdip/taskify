@@ -2,17 +2,18 @@ from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, root_validator
 from sqlalchemy.orm import Session as DBSession
-from models.connection import get_db
-from typing import Optional
-from models.users import Users
-from middlewares.middleware import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY, verify_password
-from typing import Dict, Optional
-from jose import jwt
-from models.users import Session
-from datetime import timedelta, datetime
-from fastapi import Depends, Form
-from typing import Optional
+ 
 
+from typing import Dict, Optional
+
+from jose import jwt
+
+from middlewares.middleware import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY, verify_password
+
+from models.connection import get_db
+from models.users import Users,Session 
+from datetime import timedelta, datetime
+ 
 router = APIRouter(tags=['SignUp'])
 
 # Schemas

@@ -1,8 +1,7 @@
 from datetime import datetime
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Integer
 from models.connection import Base
-from sqlalchemy.orm import relationship
-from .tasks import Tasks
+from sqlalchemy.orm import relationship 
 
 
 class Users(Base):
