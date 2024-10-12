@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg width="52mm" height="52mm" inkscape:version="1.3.2 (1:1.3.2+202311252150+091e20ef0f)" sodipodi:docname="task.svg" version="1.1" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd">
+ <sodipodi:namedview bordercolor="#000000" borderopacity="0.25" inkscape:current-layer="layer1" inkscape:cx="397.44385" inkscape:cy="323.48474" inkscape:deskcolor="#d1d1d1" inkscape:document-units="mm" inkscape:pagecheckerboard="0" inkscape:pageopacity="0.0" inkscape:showpageshadow="2" inkscape:window-height="970" inkscape:window-maximized="1" inkscape:window-width="1920" inkscape:window-x="0" inkscape:window-y="0" inkscape:zoom="0.72337262" pagecolor="#ffffff"/>
+ <defs>
+  <linearGradient x1="152" x2="65.523" y1="167.79" y2="259.62" gradientTransform="matrix(.26458 0 0 .26458 28.84 48.948)" gradientUnits="userSpaceOnUse">
+   <stop stop-color="var(--palette-primary-dark)" offset="0"/>
+   <stop stop-color="var(--palette-primary-main)" offset="1"/>
+  </linearGradient>
+  <linearGradient x1="86" x2="86" y1="128" y2="384" gradientTransform="matrix(.26458 0 0 .26458 28.84 48.948)" gradientUnits="userSpaceOnUse">
+   <stop stop-color="var(--palette-primary-light)" offset="0"/>
+   <stop stop-color="var(--palette-primary-main)" offset="1"/>
+  </linearGradient>
+  <linearGradient x1="402" x2="402" y1="288" y2="384" gradientTransform="matrix(.26458 0 0 .26458 28.84 48.948)" gradientUnits="userSpaceOnUse">
+   <stop stop-color="var(--palette-primary-light)" offset="0"/>
+   <stop stop-color="var(--palette-primary-main)" offset="1"/>
+  </linearGradient>
+ </defs>
+ <g inkscape:groupmode="layer" inkscape:label="Layer 1">
+  <g transform="translate(-62.209 -102.57)">
+   <rect x="63.209" y="103.57" width="50" height="50" rx="10" ry="10" fill="#f2f2f2" fill-rule="evenodd" stroke="#fff" stroke-dasharray="0.227, 0.227" stroke-linejoin="round" stroke-miterlimit="1" stroke-width=".227"/>
+   <g transform="matrix(1.1392 0 0 1.1392 25.945 17.546)">
+    <g transform="matrix(.26458 0 0 .26458 43.015 85.814)" fill="none" fill-rule="evenodd">
+     <rect width="0" height="0"/>
+     <path d="m30.755 33.292-7.34 8.935 17.383 14.253a5.782 5.782 0 0 0 8.182-0.854l31.179-38.93-9.026-7.228-27.519 34.362-12.86-10.538z" fill="#ffb000"/>
+     <path d="m44 78.1c-18.803 0-34.1-15.297-34.1-34.1s15.297-34.1 34.1-34.1v-9.9c-24.262 0-44 19.738-44 44s19.738 44 44 44 44-19.738 44-44h-9.9c0 18.803-15.297 34.1-34.1 34.1" fill="#4772fa"/>
+    </g>
+   </g>
+  </g>
+ </g>
+</svg>
