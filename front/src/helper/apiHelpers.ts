@@ -1,8 +1,8 @@
 import axios, { AxiosResponse } from "axios";
+import { toast } from "react-toastify";
 
 const API_URL = import.meta.env.VITE_BASE_URL;
 
-// Define a generic type for the expected API response
 interface ApiResponse<T = any> {
   status: number;
   data: T;
@@ -22,18 +22,30 @@ export const apiHelper = async (apiUrl: string, params: Record<string, any>, tok
     });
 
     if (response.statusText === "OK" && response.status === 200) {
-      const { status, data, message } = response.data;
-
-      if (status === 2) {
-        window.location.href = "/login";
-        // localStorage.removeItem("uID");
-      } else {
-        return data;
-      }
+      return response.data;
     } else {
       throw new Error(response.data.message || "Unknown error occurred");
     }
   } catch (error: any) {
-    throw error;
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem("token");
+      toast.success("Logged Out Successfully", {
+        autoClose: 1000,
+        hideProgressBar: true,
+      });
+
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1000);
+    } else if (error.response && error.response.status === 422) {
+      toast.error(error.response.data.message, {
+        autoClose: 1000,
+        hideProgressBar: true,
+      });
+    }
+    else {
+      console.error("An error occurred", error);
+      throw new Error(error.response?.data?.message || "Unknown error occurred");
+    }
   }
 };

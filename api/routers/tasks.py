@@ -74,10 +74,11 @@ async def add_or_edit_task(
                 "message": simplified_errors
             }, status_code=422)
 
-        task_due_date = None
         if task_due_date:
             task_due_date = datetime.strptime(task_due_date, '%Y-%m-%d').date()
- 
+        else:
+            task_due_date = None
+
         check_task = Tasks.check_record(db, task_title)
         if check_task != None:
             return JSONResponse({
@@ -98,6 +99,7 @@ async def add_or_edit_task(
             "status" : 200,
             "message": "Task added successfully"
         }, status_code=200)
+
     else:
         task = Tasks.find_task_by_task_id(db, task_id)
         if task==None:
@@ -111,14 +113,10 @@ async def add_or_edit_task(
 
         task.task_description    =   task_description
 
-        if task_due_date:
-            try:
-                task.task_due_date = datetime.strptime(task_due_date, '%Y-%m-%d').date()
-            except ValueError:
-                return JSONResponse({
-                    "status": 422,
-                    "message": "Task due date must be in 'YYYY-MM-DD' format."
-                }, status_code=422)
+        if task_due_date == "" or task_due_date == None:
+            task.task_due_date = None
+        else:
+            task.task_due_date = datetime.strptime(task_due_date, '%Y-%m-%d').date()
 
         if task_status is not None:
             task.task_status     =   task_status
@@ -163,9 +161,9 @@ async def remove_task(
         }, status_code=200)
     else:
         return JSONResponse({
-            "status" : 204,
+            "status" : 500,
             "message": "Given task for remove that already removed."
-        }, status_code=204)
+        }, status_code=500)
 
 
 

@@ -79,7 +79,7 @@ def sign_in(
         "status"    : 200,
         "message"   : "Login Successful.",
         "data"      : {
-            "token" : user_session.session_token
+            "token" : token
         }
     }
 
@@ -121,12 +121,12 @@ def logout(request: Request, db: DBSession = Depends(get_db)):
     authorization: str = request.headers.get("Authorization")
 
     if not authorization:
-        return JSONResponse({"status" : 498, "message": "Authorization header is missing"}, status_code=498)
+        return JSONResponse({"status" : 401, "message": "Authorization header is missing"}, status_code=401)
 
     token_parts = authorization.split()
 
     if len(token_parts) != 2 or token_parts[0].lower() != "bearer":
-        return JSONResponse({"status" : 400, "message": "Invalid Authorization header format"}, status_code=400)
+        return JSONResponse({"status" : 401, "message": "Invalid Authorization header format"}, status_code=401)
 
     token = token_parts[1]
 
@@ -137,13 +137,13 @@ def logout(request: Request, db: DBSession = Depends(get_db)):
     ).first()
 
     if not session_record:
-        return JSONResponse({"status" : 500, "message": "Session not found or already deleted"}, status_code=500)
+        return JSONResponse({"status" : 401, "message": "Session not found or already deleted"}, status_code=401)
 
     session_record.is_deleted = True
     session_record.session_status = 0
     db.commit()
 
-    return JSONResponse({"status" : 200, "message": "Successfully logged out"}, status_code=200)
+    return JSONResponse({"status" : 401, "message": "Successfully logged out"}, status_code=401)
 
 
 

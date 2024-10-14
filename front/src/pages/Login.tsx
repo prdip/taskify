@@ -1,23 +1,16 @@
 import { useState } from "react";
-import {
-  EyeCloseIcon,
-  EyeOpenIcon,
-  GithubIcon,
-  GoogleIcon,
-  XIcon,
-} from "../components/Icons";
 import TextInput from "../components/TextInput";
 import { Button } from "@/components/ui/button";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
+import { useDispatch } from "react-redux";
 import { setToken } from "@/redux/store/authSlice";
 import axios from "axios";
+import { toast } from "react-toastify";
+import { Eye, EyeClosed, Facebook, Github, Twitter } from "lucide-react";
 
 const Login = () => {
   document.title = "Taskify - Login";
   const API_URL = import.meta.env.VITE_BASE_URL;
   const dispatch = useDispatch();
-  const token = useSelector((state: RootState) => state.auth.token);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -43,18 +36,24 @@ const Login = () => {
       const authToken = data.data.data.token;
       if (authToken) {
         dispatch(setToken(authToken));
-        window.location.href = "/";
+
+        toast.success("Login successfull!", {
+          autoClose: 1000,
+          hideProgressBar: true,
+        });
+
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 1000);
       }
     } catch (error) {
       const err = error as any;
-      console.error("Login failed", error);
       setError(err.response.data.message);
     } finally {
       setLoading(false);
     }
   };
 
-  console.log(token);
   return (
     <main className="">
       <div className="w-full min-h-dvh flex justify-center items-center py-20 max-sm:px-4 bg-gradient-to-r from-sky-800/15 to-orange-800/15">
@@ -62,7 +61,9 @@ const Login = () => {
           <div className="flex flex-col items-center gap-3">
             <div className="mb-4">
               {/* <img src="./task.png" alt="Logo" /> */}
-              <h1 className="text-xl font-bold">Task Management Web Application</h1>
+              <h1 className="text-xl font-bold">
+                Task Management Web Application
+              </h1>
             </div>
             <h1 className="text-xl font-bold">Sign in to your account</h1>
             <div className="flex items-center gap-1">
@@ -118,9 +119,9 @@ const Login = () => {
                 onClick={togglePassword}
               >
                 {showPassword ? (
-                  <EyeOpenIcon className="size-5 text-neutral-500" />
+                  <Eye className="size-5 text-neutral-500" />
                 ) : (
-                  <EyeCloseIcon className="size-5 text-neutral-500" />
+                  <EyeClosed className="size-5 text-neutral-500" />
                 )}
               </button>
             </div>
@@ -139,13 +140,13 @@ const Login = () => {
             <p className="text-xs font-bold text-neutral-500">OR</p>
             <div className="flex mt-6 gap-2">
               <button className="size-10 flex justify-center items-center rounded-full hover:bg-slate-100 transition ease-in-out duration-300">
-                <GoogleIcon className="size-5" />
+                <Facebook className="size-5" />
               </button>
               <button className="size-10 flex justify-center items-center rounded-full hover:bg-slate-100 transition ease-in-out duration-300">
-                <GithubIcon className="size-5" />
+                <Github className="size-5" />
               </button>
               <button className="size-10 flex justify-center items-center rounded-full hover:bg-slate-100 transition ease-in-out duration-300">
-                <XIcon className="size-5" />
+                <Twitter className="size-5" />
               </button>
             </div>
           </div>

@@ -1,11 +1,4 @@
-import { useEffect, useState } from "react";
-import {
-  ChevronIcon,
-  EllipsisIcon,
-  PencilIcon,
-  SearchIcon,
-  TrashboxIcon,
-} from "../components/Icons";
+import { useEffect, useMemo, useState } from "react";
 import TextInput from "@/components/TextInput";
 import {
   Popover,
@@ -31,12 +24,20 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { CalendarIcon, LogOut, Plus } from "lucide-react";
+import {
+  CalendarIcon,
+  ChevronDown,
+  EllipsisVertical,
+  LogOut,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react";
 import { apiHelper } from "@/helper/apiHelpers";
 import { toast } from "react-toastify";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { removeToken } from "@/redux/store/authSlice";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -60,7 +61,6 @@ interface Task {
 
 const Home = () => {
   document.title = "Taskify - My Tasks";
-  const dispatch = useDispatch();
   const authToken = useSelector((state: RootState) => state.auth.token);
 
   const [taskId, settaskId] = useState("");
@@ -76,6 +76,7 @@ const Home = () => {
   const [loadMore, setloadMore] = useState(true);
 
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
 
   const [dialogModal, setdialogModal] = useState(false);
   const [filterPopup, setfilterPopup] = useState(false);
@@ -92,7 +93,7 @@ const Home = () => {
       form_data.append("skip", page.toString());
       form_data.append("search", search);
       const data = await apiHelper("task/task-list", form_data, authToken);
-      const fetchedData = data.task_list;
+      const fetchedData = data.data.task_list;
 
       if (resetTasks) {
         setTasks(fetchedData);
@@ -108,7 +109,7 @@ const Home = () => {
           setloadMore(false);
         }
       }
-      settotalPages(data.total_pages);
+      settotalPages(data.data.total_pages);
     } catch (error: any) {
       console.log(error);
     } finally {
@@ -119,6 +120,11 @@ const Home = () => {
   const manageTask = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setformLoading(true);
+
+    if (!taskTitle || !taskDescription) {
+      toast.error("Make sure to fill title and description fields");
+      return;
+    }
 
     try {
       const formattedDate = taskDate
@@ -131,17 +137,32 @@ const Home = () => {
       form_data.append("task_due_date", formattedDate);
       if (taskId) {
         form_data.append("task_id", taskId);
-        await apiHelper("task/add-or-edit-task", form_data, authToken);
+        const data = await apiHelper(
+          "task/add-or-edit-task",
+          form_data,
+          authToken
+        );
+        toast.success(data.message, {
+          autoClose: 1000,
+          hideProgressBar: true,
+        });
       } else {
-        await apiHelper("task/add-or-edit-task", form_data, authToken);
+        const data = await apiHelper(
+          "task/add-or-edit-task",
+          form_data,
+          authToken
+        );
+        toast.success(data.message, {
+          autoClose: 1000,
+          hideProgressBar: true,
+        });
       }
       setTasks([]);
       setcurrentPage(1);
       fetchTasks(1);
       setdialogModal(false);
     } catch (error: any) {
-      toast.error(error.response.data.message);
-      console.log(error);
+      // console.log(error)
     } finally {
       setformLoading(false);
     }
@@ -149,23 +170,29 @@ const Home = () => {
 
   const deleteTask = async (taskId: string) => {
     try {
-      const form_data = new FormData();
-      form_data.append("task_id", taskId);
-      await apiHelper("task/task-remove", form_data, authToken);
-      setTasks((prevTasks) =>
-        prevTasks.filter((task) => task.task_id.toString() !== taskId)
-      );
+      setDeletingTaskId(taskId);
+      setTimeout(async () => {
+        const form_data = new FormData();
+        form_data.append("task_id", taskId);
+        const data = await apiHelper("task/task-remove", form_data, authToken);
+        setTasks((prevTasks) =>
+          prevTasks.filter((task) => task.task_id.toString() !== taskId)
+        );
+        toast.success(data.message, {
+          autoClose: 1000,
+          hideProgressBar: true,
+        });
+        setDeletingTaskId(null);
+      }, 500);
     } catch (error: any) {
       console.error("Error while deleting task:", error);
+      setDeletingTaskId(null);
     }
   };
 
   const handleLogout = async (): Promise<void> => {
     try {
       await apiHelper("auth/logout", {}, authToken);
-
-      dispatch(removeToken());
-      window.location.href = "/login";
     } catch (error) {
       console.error("Logout failed", error);
     }
@@ -177,7 +204,11 @@ const Home = () => {
       settaskTitle(item.task_title);
       settaskDescription(item.task_description);
       settaskStatus(item.task_status);
-      settaskDate(new Date(item.task_due_date));
+      if (item.task_due_date) {
+        settaskDate(new Date(item.task_due_date));
+      } else {
+        settaskDate(undefined);
+      }
     } else {
       settaskId("");
       settaskTitle("");
@@ -208,7 +239,7 @@ const Home = () => {
     fetchTasks(currentPage);
   }, [currentPage]);
 
-  useEffect(() => {
+  useMemo(() => {
     setTasks([]);
     setcurrentPage(1);
     setloadMore(true);
@@ -253,19 +284,38 @@ const Home = () => {
               </span>
             </Button>
 
-            <Button
-              className="px-3 py-2 max-sm:text-xs font-semibold"
-              onClick={handleLogout}
-            >
-              <LogOut className="size-5" />
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button className="px-3 py-2 max-sm:text-xs font-semibold">
+                  <LogOut className="size-5" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to log out? Any unsaved changes will
+                    be lost.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleLogout}
+                    className="bg-red-700 hover:bg-red-600"
+                  >
+                    Continue
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
 
-        <div className="p-4 sm:p-6 space-y-4 rounded-xl bg-white">
+        <div className="p-4 sm:p-6 space-y-4 rounded-xl overflow-x-hidden bg-white">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between max-sm:gap-2">
             <div className="relative max-w-lg w-full flex items-center">
-              <SearchIcon className="absolute size-5 left-3 text-neutral-400" />
+              <Search className="absolute size-5 left-3 text-neutral-400" />
               <input
                 type="text"
                 name="search"
@@ -282,7 +332,7 @@ const Home = () => {
                 <PopoverTrigger asChild>
                   <button className="flex items-center gap-1 px-3 py-2 text-sm font-bold rounded-md outline-none hover:bg-gray-100 transition ease-in-out duration-300">
                     {getFilterLabel()}
-                    <ChevronIcon className="size-4" />
+                    <ChevronDown className="size-4" />
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-40 mt-1" align="end">
@@ -334,7 +384,11 @@ const Home = () => {
               tasks.map((item) => (
                 <div
                   key={item.task_id}
-                  className="grid grid-cols-12 items-center px-4 py-2 cursor-pointer hover:bg-gray-100"
+                  className={`grid grid-cols-12 items-center px-4 py-2 cursor-pointer hover:bg-gray-100 transition-all ease-in-out duration-500 ${
+                    deletingTaskId === item.task_id.toString()
+                      ? "opacity-0 translate-x-full"
+                      : "opacity-100"
+                  }`}
                 >
                   <div
                     className="col-span-6 sm:col-span-8 max-sm:text-sm"
@@ -345,7 +399,10 @@ const Home = () => {
                       {item.task_description}
                     </p>
                   </div>
-                  <div className="col-span-3 sm:col-span-2" onClick={() => openModal(item)}>
+                  <div
+                    className="col-span-3 sm:col-span-2"
+                    onClick={() => openModal(item)}
+                  >
                     <h1
                       className={`w-fit px-3 py-0.5 text-xs sm:text-sm rounded sm:rounded-md ${
                         item.task_status_name.toLowerCase() === "pending" &&
@@ -365,7 +422,7 @@ const Home = () => {
                     <Popover>
                       <PopoverTrigger asChild>
                         <button className="size-8 sm:size-10 flex justify-center items-center rounded-full hover:bg-slate-200 transition ease-in-out duration-300">
-                          <EllipsisIcon className="size-4 sm:size-[1.2rem]" />
+                          <EllipsisVertical className="size-4 sm:size-[1.2rem]" />
                         </button>
                       </PopoverTrigger>
                       <PopoverContent className="w-40" align="end">
@@ -374,13 +431,13 @@ const Home = () => {
                             className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition ease-in-out duration-300"
                             onClick={() => openModal(item)}
                           >
-                            <PencilIcon className="size-4" />
+                            <Pencil className="size-4" />
                             Edit
                           </button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <button className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition ease-in-out duration-300">
-                                <TrashboxIcon className="size-4" />
+                                <Trash2 className="size-4" />
                                 Delete
                               </button>
                             </AlertDialogTrigger>
@@ -428,7 +485,7 @@ const Home = () => {
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-xl sm:text-2xl">
-              Create Task
+              {taskTitle ? "Edit Task" : "Create Task"}
             </DialogTitle>
             <DialogDescription></DialogDescription>
           </DialogHeader>
@@ -459,21 +516,26 @@ const Home = () => {
                 />
               </div>
 
-              <Select
-                value={taskStatus}
-                onValueChange={(value) => settaskStatus(value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="0">Pending</SelectItem>
-                    <SelectItem value="1">Processing</SelectItem>
-                    <SelectItem value="2">Completed</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+              <div className="relative">
+                <span className="absolute -top-2 left-2.5 px-1 text-xs font-semibold bg-white text-neutral-600">
+                  Select Status
+                </span>
+                <Select
+                  value={taskStatus}
+                  onValueChange={(value) => settaskStatus(value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="0">Pending</SelectItem>
+                      <SelectItem value="1">Processing</SelectItem>
+                      <SelectItem value="2">Completed</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
 
               <div>
                 <Popover>
@@ -507,7 +569,9 @@ const Home = () => {
                 </Popover>
               </div>
 
-              <Button>{formLoading ? "Saving..." : "Save"}</Button>
+              <Button className="py-3">
+                {formLoading ? "Saving..." : "Save"}
+              </Button>
             </form>
           </div>
         </DialogContent>
