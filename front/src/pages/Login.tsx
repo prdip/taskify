@@ -60,8 +60,9 @@ const Login = () => {
       <div className="w-full min-h-dvh flex justify-center items-center py-20 max-sm:px-4 bg-gradient-to-r from-sky-800/15 to-orange-800/15">
         <div className="max-w-[26rem] w-full rounded-xl py-10 px-6 bg-white">
           <div className="flex flex-col items-center gap-3">
-            <div className="size-24 mb-4">
-              <img src="./task.png" alt="Logo" />
+            <div className="mb-4">
+              {/* <img src="./task.png" alt="Logo" /> */}
+              <h1 className="text-xl font-bold">Task Management Web Application</h1>
             </div>
             <h1 className="text-xl font-bold">Sign in to your account</h1>
             <div className="flex items-center gap-1">
